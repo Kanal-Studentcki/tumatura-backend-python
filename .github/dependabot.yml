@@ -6,3 +6,8 @@ updates:
       interval: "weekly"
     reviewers:
       - "an0da"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
