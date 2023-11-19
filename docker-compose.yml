@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.bot
+    working_dir: /app
+    env_file: .env
+
+  api:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.api
+    working_dir: /app
+    env_file: .env
+    ports:
+      - "8000:8000"
