@@ -1,7 +1,15 @@
 from datetime import datetime, timedelta
 
-from mongoengine import Document, EmailField, StringField, IntField, ListField, EmbeddedDocumentField, EmbeddedDocument, \
-    DateTimeField
+from mongoengine import (
+    DateTimeField,
+    Document,
+    EmailField,
+    EmbeddedDocument,
+    EmbeddedDocumentField,
+    IntField,
+    ListField,
+    StringField,
+)
 
 
 ### Collection: users
@@ -15,9 +23,6 @@ class Users(Document):
     email = EmailField()
     discord = StringField()
     roles = ListField(EmbeddedDocumentField(UserRole), default=[])
-
-    def __getitem__(self, index):
-        return self.discord
 
 
 ### Collection: roles

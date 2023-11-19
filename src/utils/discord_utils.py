@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import discord
 
@@ -10,25 +10,43 @@ class DiscordUtils:
         self.client = client
         self.mongo = MongoUtils()
 
-    async def assign_roles(self, guild: discord.Guild, member: discord.Member, *, role_name: List[str] = None,
-                           role_id: List[int] = None) -> None:
+    async def assign_roles(
+        self,
+        guild: discord.Guild,
+        member: discord.Member,
+        *,
+        role_name: Optional[List[str]] = None,
+        role_id: Optional[List[int]] = None
+    ) -> None:
         if not role_id and not role_name:
             raise Exception("Neither role ID nor role name is specified")
 
         if not role_id and role_name:
             role_id = [self.mongo.get_role_id_by_name(role) for role in role_name]
+
+        if not role_id:
+            raise Exception("No roles to assign")
 
         roles = [self._get_role_by_id(guild, role) for role in role_id]
 
         await member.add_roles(*roles)
 
-    async def remove_roles(self, guild: discord.Guild, member: discord.Member, *, role_name: List[str] = None,
-                           role_id: List[int] = None) -> None:
+    async def remove_roles(
+        self,
+        guild: discord.Guild,
+        member: discord.Member,
+        *,
+        role_name: Optional[List[str]] = None,
+        role_id: Optional[List[int]] = None
+    ) -> None:
         if not role_id and not role_name:
             raise Exception("Neither role ID nor role name is specified")
 
         if not role_id and role_name:
             role_id = [self.mongo.get_role_id_by_name(role) for role in role_name]
+
+        if not role_id:
+            raise Exception("No roles to remove")
 
         roles = [self._get_role_by_id(guild, role) for role in role_id]
 

@@ -11,7 +11,7 @@ router = register_router("/discord_roles")
 
 
 @router.post("/new_purchase")
-async def new_purchase(data: WPOrderUpdateData):
+async def new_purchase(data: WPOrderUpdateData) -> JSONResponse:
     if data.status == "Completed":
         product_ids = [product.product_id for product in data.line_items]
         product_role_names = [wp_utils.get_role_names_from_product(product_id) for product_id in product_ids]
@@ -22,8 +22,9 @@ async def new_purchase(data: WPOrderUpdateData):
             role_ids.append(mongo_utils.get_role_id_by_name(role_name))
 
         customer_data = wp_utils.get_customer_data(data.customer_id)
-        mongo_utils.upsert_user_role(role_ids, customer_data["discord"], customer_id=data.customer_id,
-                                     email=customer_data["email"])
+        mongo_utils.upsert_user_role(
+            role_ids, customer_data["discord"], customer_id=data.customer_id, email=customer_data["email"]
+        )
 
         return JSONResponse(content={"success": True, "comment": ""}, status_code=201)
 
