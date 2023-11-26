@@ -22,6 +22,14 @@ jobs:
       packages: write
       id-token: write
 
+    strategy:
+      matrix:
+        include:
+          - context: "dockerfiles/Dockerfile.api"
+            image_suffix: "api"
+          - context: "dockerfiles/Dockerfile.bot"
+            image_suffix: "bot"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -47,27 +55,19 @@ jobs:
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.image_suffix }}
 
       - name: Build and push Docker image
         id: build-and-push
-        if: github.event_name != 'pull_request'
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          LABELS: ${{ steps.meta.outputs.labels }}
-          CACHE-FROM: type=gha
-          CACHE-TO: type=gha,mode=max
-        run: docker buildx bake --tag ${TAGS} --push --label ${LABELS} --cache-from ${CACHE_FROM} --cache-to ${CACHE_TO}
-
-      - name: Build NOT push Docker image
-        id: build-not-push
-        if: github.event_name == 'pull_request'
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          LABELS: ${{ steps.meta.outputs.labels }}
-          CACHE-FROM: type=gha
-          CACHE-TO: type=gha,mode=max
-        run: docker buildx bake --tag ${TAGS} --label ${LABELS} --cache-from ${CACHE_FROM} --cache-to ${CACHE_TO}
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: .
+          file: ${{ matrix.context }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Sign the published Docker image
         if: ${{ github.event_name != 'pull_request' }}
